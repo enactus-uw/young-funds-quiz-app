@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -14,5 +14,23 @@ from models import Quiz
 def hello():
     return "Hello world"
 
-if __name__ == '__main__':
-    app.run()
+@app.route("/admin/insert/quiz", methods=['POST'])
+def insert_quiz():
+    # TODO admin auth
+    title = request.args.get('title')
+    enabled = request.args.get('enabled')
+    quiz = Quiz(title=title, enabled=enabled)
+    db.session.add(quiz)
+    db.session.commit()
+    return str(quiz.id)
+
+@app.route("/admin/insert/<quiz_id>/question", methods=['POST'])
+def insert_question(quiz_id):
+    # TODO admin auth
+    text = request.args.get('text')
+    quiz = Quizzes.query.filter_by(id=quiz_id).first()
+    question = Question(text=text)
+    quiz.questions.append(question)
+    db.session.add(question)
+    db.session.commit()
+    return str(question.id)

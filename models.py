@@ -13,8 +13,9 @@ class Quiz(db.Model):
             order_by='Question.position',
             collection_class=ordering_list('position'))
 
-    def __init__(self, title):
+    def __init__(self, title, enabled):
         self.title = title
+        self.enabled = enabled
 
     def serialize(self):
         return {
