@@ -15,9 +15,9 @@ class Quiz(db.Model):
             order_by='Question.position',
             collection_class=ordering_list('position'))
 
-    def __init__(self, title, enabled):
+    def __init__(self, title):
         self.title = title
-        self.enabled = enabled
+        self.enabled = False
 
     def serialize(self):
         return {
