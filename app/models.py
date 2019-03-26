@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.orderinglist import ordering_list
-    
+
 db = SQLAlchemy()
 
 class Quiz(db.Model):
@@ -33,11 +33,7 @@ class Question(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     text = db.Column(db.String(), nullable=False)
     position = db.Column(db.Integer, nullable=False)
-    choices = db.relationship(
-            'Choice',
-            backref='question',
-            order_by='Choice.position',
-            collection_class=ordering_list('position'))
+    choices = db.relationship('Choice', backref='question')
 
     def __init__(self, text):
         self.text = text
@@ -52,7 +48,6 @@ class Choice(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     text = db.Column(db.String(100), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
-    position = db.Column(db.Integer, nullable=False)
 
     def __init__(self, text):
         self.text = text
