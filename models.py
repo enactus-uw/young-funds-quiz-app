@@ -1,5 +1,7 @@
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.orderinglist import ordering_list
-from app import db
+    
+db = SQLAlchemy()
 
 class Quiz(db.Model):
     __tablename__ = 'quizzes'
