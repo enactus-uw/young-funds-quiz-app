@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import validates
 from sqlalchemy import UniqueConstraint
 
 db = SQLAlchemy()
@@ -18,7 +19,20 @@ class Quiz(db.Model):
 
     def __init__(self, title):
         self.title = title
+        # Not to be set manually
         self.enabled = False
+
+    class EnableException(Exception):
+        pass
+
+    @validates('enabled')
+    def validates_enabled(self, key, val):
+        if val:
+            # Cannot enable quizzes with no questions or if any question has no choice
+            if len(self.questions) == 0 or\
+                    any([len(q.choices) == 0 for q in self.questions]):
+                raise Quiz.EnableException()
+        return val
 
     def serialize(self):
         return {

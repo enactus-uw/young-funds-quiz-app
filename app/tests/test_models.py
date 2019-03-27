@@ -67,3 +67,19 @@ def test_create_choice(db):
     assert question.choices[1] == choice2
     assert question.choices[0].question == question
     assert question.choices[1].question == question
+
+def test_quiz_enable(db):
+    quiz = make_quiz(db)
+    with pytest.raises(Quiz.EnableException):
+        quiz.enabled = True
+    assert quiz.enabled == False
+
+    question = make_question(db, quiz=quiz)
+    make_choice(db, question=question)
+    quiz.enabled = False
+    assert quiz.enabled == False
+
+    make_question(db, quiz=quiz)
+    with pytest.raises(Quiz.EnableException):
+        quiz.enabled = True
+    assert quiz.enabled == False
