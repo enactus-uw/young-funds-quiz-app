@@ -53,6 +53,7 @@ class Choice(db.Model):
     correct = db.Column(db.Boolean, default=False, nullable=False)
     # Choices don't need to be ordered, so no position column
 
-    def __init__(self, question, text):
+    def __init__(self, question, text, correct):
         self.question = question
         self.text = text
+        self.correct = correct

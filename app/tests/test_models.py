@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy import exc
 from app.models import Quiz, Question
+from .util import make_quiz, make_choice, make_question
 
 @pytest.mark.parametrize('title', ['sample', 'asdfghfds,ghjg'])
 def test_create_quiz(db, title):
-    quiz = Quiz(title)
-    db.session.add(quiz)
+    quiz = make_quiz(db, title)
     db.session.commit()
 
     quiz = Quiz.query.get(quiz.id)
@@ -13,10 +13,8 @@ def test_create_quiz(db, title):
     assert quiz.enabled == False
 
 def test_create_questions(db):
-    quiz = Quiz('sample')
-    question = Question(quiz, 'question', 0)
-    db.session.add(quiz)
-    db.session.add(question)
+    quiz = make_quiz(db)
+    question = make_question(db, 'question', quiz=quiz)
     db.session.commit()
 
     quiz = Quiz.query.get(quiz.id)
@@ -28,11 +26,10 @@ def test_create_questions(db):
     assert question == question2
 
 def test_question_ordering(db):
-    quiz = Quiz('sample')
-    question3 = Question(quiz, 'question3', 5)
-    question1 = Question(quiz, 'question1', 0)
-    question2 = Question(quiz, 'question2', 3)
-    db.session.add_all([quiz, question1, question2, question3])
+    quiz = make_quiz(db)
+    make_question(db, 'question3', 5, quiz=quiz)
+    make_question(db, 'question1', 0, quiz=quiz)
+    make_question(db, 'question2', 3, quiz=quiz)
     db.session.commit()
 
     quiz = Quiz.query.get(quiz.id)
@@ -44,10 +41,11 @@ def test_question_ordering(db):
     assert quiz.questions[2].position == 5
 
 def test_question_repeat_position(db):
-    quiz = Quiz('sample')
-    question1 = Question(quiz, 'question1', 0)
-    question2 = Question(quiz, 'question1', 0)
-    db.session.add_all([quiz, question1, question2])
+    quiz = make_quiz(db)
+    make_question(db, position=0, quiz=quiz)
+    make_question(db, position=0, quiz=quiz)
     # No repeated positions
     with pytest.raises(exc.IntegrityError):
         db.session.commit()
+
+    #make_question(db, position=0)
