@@ -8,7 +8,7 @@ class Quiz(db.Model):
     __tablename__ = 'quizzes'
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    title = db.Column(db.String(30), nullable=False)
+    title = db.Column(db.String(), nullable=False)
     enabled = db.Column(db.Boolean, default=True, nullable=False)
     questions = db.relationship(
             'Question',
@@ -55,7 +55,7 @@ class Choice(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
-    text = db.Column(db.String(100), nullable=False)
+    text = db.Column(db.String(), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
     # Choices don't need to be ordered, so no position column
 
