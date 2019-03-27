@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import exc
 from app.models import Quiz, Question
 
 @pytest.mark.parametrize('title', ['sample', 'asdfghfds,ghjg'])
@@ -41,3 +42,12 @@ def test_question_ordering(db):
     assert quiz.questions[1].position == 3
     assert quiz.questions[2].text == 'question3'
     assert quiz.questions[2].position == 5
+
+def test_question_repeat_position(db):
+    quiz = Quiz('sample')
+    question1 = Question(quiz, 'question1', 0)
+    question2 = Question(quiz, 'question1', 0)
+    db.session.add_all([quiz, question1, question2])
+    # No repeated positions
+    with pytest.raises(exc.IntegrityError):
+        db.session.commit()
