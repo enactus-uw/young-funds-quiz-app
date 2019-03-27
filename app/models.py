@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy import UniqueConstraint
 
 db = SQLAlchemy()
 
@@ -33,8 +34,13 @@ class Question(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     text = db.Column(db.String(), nullable=False)
     # Used to order questions. Not necessarily equal to question number
-    position = db.Column(db.Integer, nullable=False, unique=True)
+    position = db.Column(db.Integer, nullable=False)
     choices = db.relationship('Choice', backref='question')
+
+    __table_args__ = (
+        # No duplicate position values for a given quiz
+        UniqueConstraint('position', 'quiz_id'),
+    )
 
     def __init__(self, quiz, text, position):
         self.quiz = quiz

@@ -48,4 +48,9 @@ def test_question_repeat_position(db):
     with pytest.raises(exc.IntegrityError):
         db.session.commit()
 
-    #make_question(db, position=0)
+def test_question_repeat_position_diff_quiz(db):
+    # Allow repeated positions across different quizzes
+    make_question(db, position=0)
+    make_question(db, position=0)
+    db.session.commit()
+    assert Question.query.filter_by(position=0).count() == 2
