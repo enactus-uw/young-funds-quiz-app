@@ -32,12 +32,14 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     text = db.Column(db.String(), nullable=False)
+    # Used to order questions. Not necessarily equal to question number
     position = db.Column(db.Integer, nullable=False)
     choices = db.relationship('Choice', backref='question')
 
-    def __init__(self, quiz, text):
+    def __init__(self, quiz, text, position):
         self.quiz = quiz
         self.text = text
+        self.position = position
 
     def serialize(self):
         return { 'text': self.text }
@@ -49,6 +51,7 @@ class Choice(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     text = db.Column(db.String(100), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
+    # Choices don't need to be ordered, so no position column
 
     def __init__(self, question, text):
         self.question = question
