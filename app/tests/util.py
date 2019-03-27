@@ -13,10 +13,10 @@ def make_question(db, text='sample_question', position=0, quiz=None):
     db.session.add(question)
     return question
 
-def make_choice(db, text='sample_choice', question=None):
+def make_choice(db, text='sample_choice', correct=False, question=None):
     if question is None:
         question = make_question(db)
 
-    choice = Choice(question, text)
+    choice = Choice(question, text, correct)
     db.session.add(choice)
     return choice

@@ -3,14 +3,15 @@ from sqlalchemy import exc
 from app.models import Quiz, Question
 from .util import make_quiz, make_choice, make_question
 
-@pytest.mark.parametrize('title', ['sample', 'asdfghfds,ghjg'])
-def test_create_quiz(db, title):
+def test_create_quiz(db):
+    title = 'asdfghfds'
     quiz = make_quiz(db, title)
     db.session.commit()
 
     quiz = Quiz.query.get(quiz.id)
     assert quiz.title == title
     assert quiz.enabled == False
+    assert len(quiz.questions) == 0
 
 def test_create_questions(db):
     quiz = make_quiz(db)
@@ -21,6 +22,7 @@ def test_create_questions(db):
     question = quiz.questions[0]
     assert question.text == 'question'
     assert question.quiz.id == quiz.id
+    assert len(question.choices) == 0
 
     question2 = Question.query.filter_by(quiz=quiz).one()
     assert question == question2
@@ -54,3 +56,14 @@ def test_question_repeat_position_diff_quiz(db):
     make_question(db, position=0)
     db.session.commit()
     assert Question.query.filter_by(position=0).count() == 2
+
+def test_create_choice(db):
+    question = make_question(db)
+    choice1 = make_choice(db, 'choice1', False, question=question)
+    choice2 = make_choice(db, 'choice2', True, question=question)
+    db.session.commit()
+
+    assert question.choices[0] == choice1
+    assert question.choices[1] == choice2
+    assert question.choices[0].question == question
+    assert question.choices[1].question == question
