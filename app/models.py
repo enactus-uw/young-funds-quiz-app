@@ -35,7 +35,8 @@ class Question(db.Model):
     position = db.Column(db.Integer, nullable=False)
     choices = db.relationship('Choice', backref='question')
 
-    def __init__(self, text):
+    def __init__(self, quiz, text):
+        self.quiz = quiz
         self.text = text
 
     def serialize(self):
@@ -49,5 +50,6 @@ class Choice(db.Model):
     text = db.Column(db.String(100), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
 
-    def __init__(self, text):
+    def __init__(self, question, text):
+        self.question = question
         self.text = text
