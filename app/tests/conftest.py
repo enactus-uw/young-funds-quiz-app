@@ -21,3 +21,7 @@ def db(app):
     yield _db
     _db.session.close()
     _db.drop_all()
+
+@pytest.fixture(scope='function')
+def dbclient(db, client):
+    return client
