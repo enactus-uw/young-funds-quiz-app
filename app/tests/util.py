@@ -1,22 +1,22 @@
 from app.models import Quiz, Question, Choice
 
-def make_quiz(db, title='sample_quiz'):
+def make_quiz(session, title='sample_quiz'):
     quiz = Quiz(title)
-    db.session.add(quiz)
+    session.add(quiz)
     return quiz
 
-def make_question(db, text='sample_question', position=0, quiz=None):
+def make_question(session, text='sample_question', position=0, quiz=None):
     if quiz is None:
-        quiz = make_quiz(db)
+        quiz = make_quiz(session)
 
     question = Question(quiz, text, position)
-    db.session.add(question)
+    session.add(question)
     return question
 
-def make_choice(db, text='sample_choice', correct=False, question=None):
+def make_choice(session, text='sample_choice', correct=False, question=None):
     if question is None:
-        question = make_question(db)
+        question = make_question(session)
 
     choice = Choice(question, text, correct)
-    db.session.add(choice)
+    session.add(choice)
     return choice
