@@ -34,3 +34,15 @@ def test_create_question_api(dbclient, session, pos):
     assert question.text == ';dfg,'
     assert question.quiz == quiz
     assert question.id == int(resp.get_data())
+
+@pytest.mark.parametrize('correct', [True, False])
+def test_create_choice(dbclient, session, correct):
+    question = make_question(session)
+    resp = call_api(dbclient, Routes.CREATE_CHOICE,
+            {'text': 'abc ooome  dfg', 'correct': correct, 'question_id': question.id})
+
+    choice = Choice.query.filter_by(correct=correct).one()
+    assert choice.text ==  'abc ooome  dfg'
+    assert choice.correct == correct
+    assert choice.question == question
+    assert choice.id == int(resp.get_data())

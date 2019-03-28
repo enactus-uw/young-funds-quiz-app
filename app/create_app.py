@@ -50,8 +50,9 @@ def create_app(config):
         text, correct, question_id =\
                 request_vals(request, 'text', 'correct', 'question_id')
 
-        choice = Choice(question_id, text, correct) 
+        choice = Choice(question_id, text, correct == 'True') 
         db.session.add(choice)
         db.session.commit()
+        return str(choice.id)
 
     return app
