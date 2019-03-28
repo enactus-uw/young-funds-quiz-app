@@ -16,7 +16,9 @@ def test_homepage(client):
     assert resp.status_code == 200
     # TODO elaborate
 
-@pytest.mark.parametrize('path', [Routes.CREATE_QUIZ, Routes.CREATE_QUESTION])
+@pytest.mark.parametrize('path',
+        [Routes.CREATE_QUIZ, Routes.CREATE_QUESTION, Routes.CREATE_CHOICE,
+         Routes.EDIT_QUIZ, Routes.EDIT_QUESTION, Routes.EDIT_CHOICE,])
 def test_wrong_method(client, path):
     resp = client.get(path)
     assert resp.status_code == 405
@@ -55,6 +57,9 @@ def test_empty_edit(dbclient, session):
 
     with pytest.raises(KeyError):
         post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id})
+
+    with pytest.raises(KeyError):
+        post_json(dbclient, Routes.CREATE_CHOICE, {})
 
 def test_edit_quiz(dbclient, session):
     make_quiz(session, 'quiz1')
