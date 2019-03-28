@@ -1,7 +1,14 @@
 import os
 from flask import Flask, request, jsonify
 
-from app.models import db, Quiz
+from app.models import db, Quiz, Question, Choice
+
+
+# Contains all routes used by app
+class Routes:
+    CREATE_QUIZ = "/admin/create/quiz"
+    CREATE_QUESTION = "/admin/create/question"
+    CREATE_CHOICE = "/admin/create/choice"
 
 def create_app(config):
     app = Flask(__name__)
@@ -13,7 +20,7 @@ def create_app(config):
     def hello():
         return "Hello world"
 
-    @app.route("/admin/create/quiz", methods=['POST'])
+    @app.route(Routes.CREATE_QUIZ, methods=['POST'])
     def insert_quiz():
         # TODO admin auth
         title = request.values.get('title')
@@ -23,7 +30,7 @@ def create_app(config):
         db.session.commit()
         return str(quiz.id)
 
-    @app.route("/admin/create/question", methods=['POST'])
+    @app.route(Routes.CREATE_QUESTION, methods=['POST'])
     def insert_question():
         # TODO admin auth
         text = request.values.get('text')
