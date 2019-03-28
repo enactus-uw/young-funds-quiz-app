@@ -77,3 +77,8 @@ def test_quiz_enable(session):
     with pytest.raises(Quiz.EnableException):
         quiz.enabled = True
     assert quiz.enabled == False
+
+def test_big_strings(session):
+    make_quiz(session, ";;#@$^&&*()"*100)
+    make_choice(session, ";;#@$^&&*()"*100)
+    make_question(session, ";;#@$^&&*()"*100)
