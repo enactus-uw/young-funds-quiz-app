@@ -56,8 +56,8 @@ class Question(db.Model):
         UniqueConstraint('position', 'quiz_id'),
     )
 
-    def __init__(self, quiz, text, position):
-        self.quiz = quiz
+    def __init__(self, quiz_id, text, position):
+        self.quiz_id = quiz_id
         self.text = text
         self.position = position
 
@@ -73,7 +73,7 @@ class Choice(db.Model):
     correct = db.Column(db.Boolean, default=False, nullable=False)
     # Choices don't need to be ordered, so no position column
 
-    def __init__(self, question, text, correct):
-        self.question = question
+    def __init__(self, question_id, text, correct):
+        self.question_id = question_id
         self.text = text
         self.correct = correct

@@ -26,7 +26,6 @@ def test_create_quiz_api(dbclient):
 @pytest.mark.parametrize('pos', [0, 1, 2, 3, 400])
 def test_create_question_api(dbclient, session, pos):
     quiz = make_quiz(session)
-    session.commit()
     resp = call_api(dbclient, Routes.CREATE_QUESTION,
             {'position': pos, 'text': ';dfg,', 'quiz_id': quiz.id})
     

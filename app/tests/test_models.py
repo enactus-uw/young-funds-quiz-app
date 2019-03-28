@@ -6,7 +6,6 @@ from .util import make_quiz, make_choice, make_question
 def test_create_quiz(session):
     title = 'asdfghfds'
     quiz = make_quiz(session, title)
-    session.commit()
 
     quiz = Quiz.query.get(quiz.id)
     assert quiz.title == title
@@ -16,7 +15,6 @@ def test_create_quiz(session):
 def test_create_questions(session):
     quiz = make_quiz(session)
     question = make_question(session, 'question', quiz=quiz)
-    session.commit()
 
     quiz = Quiz.query.get(quiz.id)
     question = quiz.questions[0]
@@ -32,7 +30,6 @@ def test_question_ordering(session):
     make_question(session, 'question3', 5, quiz=quiz)
     make_question(session, 'question1', 0, quiz=quiz)
     make_question(session, 'question2', 3, quiz=quiz)
-    session.commit()
 
     quiz = Quiz.query.get(quiz.id)
     assert quiz.questions[0].text == 'question1'
@@ -45,23 +42,20 @@ def test_question_ordering(session):
 def test_question_repeat_position(session):
     quiz = make_quiz(session)
     make_question(session, position=0, quiz=quiz)
-    make_question(session, position=0, quiz=quiz)
     # No repeated positions
     with pytest.raises(exc.IntegrityError):
-        session.commit()
+        make_question(session, position=0, quiz=quiz)
 
 def test_question_repeat_position_diff_quiz(session):
     # Allow repeated positions across different quizzes
     make_question(session, position=0)
     make_question(session, position=0)
-    session.commit()
     assert Question.query.filter_by(position=0).count() == 2
 
 def test_create_choice(session):
     question = make_question(session)
     choice1 = make_choice(session, 'choice1', False, question=question)
     choice2 = make_choice(session, 'choice2', True, question=question)
-    session.commit()
 
     assert question.choices[0] == choice1
     assert question.choices[1] == choice2
@@ -79,7 +73,7 @@ def test_quiz_enable(session):
     quiz.enabled = False
     assert quiz.enabled == False
 
-    make_question(session, quiz=quiz)
+    make_question(session, quiz=quiz, position=2)
     with pytest.raises(Quiz.EnableException):
         quiz.enabled = True
     assert quiz.enabled == False
