@@ -17,12 +17,17 @@ class Routes:
 
 
 # Gets fields out of request for create and editing 
-def request_vals():
-    return request.get_json()
+def request_vals(*keys):
+    data = request.get_json()
+    out = {}
+    for k in keys:
+        if k in data:
+            out[k] = data[k]
+    return out
 
 def create_api(model_cls, *keys):
     model = model_cls()
-    for attr, val in request_vals().items():
+    for attr, val in request_vals(*keys).items():
         setattr(model, attr, val)
 
     db.session.add(model)
@@ -30,7 +35,7 @@ def create_api(model_cls, *keys):
     return str(model.id)
 
 def edit_api(model_cls, *keys):
-    fields = request_vals()
+    fields = request_vals(*keys, 'id')
     # Request JSON must contain ID of the model to edit
     model = model_cls.query.get(fields.pop('id'))
     for attr, val in fields.items():

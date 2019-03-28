@@ -22,7 +22,7 @@ def test_wrong_method(client, path):
     assert resp.status_code == 405
 
 def test_create_quiz_api(dbclient):
-    resp = post_json(dbclient, Routes.CREATE_QUIZ, {'title': 'sample'})
+    resp = post_json(dbclient, Routes.CREATE_QUIZ, {'title': 'sample', 'dummy': 2})
     quiz = Quiz.query.filter_by(title='sample').one()
     assert int(resp.get_data()) == quiz.id
 
