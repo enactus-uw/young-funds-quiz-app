@@ -49,3 +49,14 @@ def test_create_choice(dbclient, session, correct):
     assert choice.correct == correct
     assert choice.question == question
     assert choice.id == int(resp.get_data())
+
+def test_edit_quiz(dbclient, session):
+    make_quiz(session, 'quiz1') 
+    quiz = make_quiz(session, 'quiz12') 
+
+    post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id, 'title': 'quiz22'})
+    # Make sure empty edits don't do anything and don't crash
+    post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id})
+    assert Quiz.query.count() == 2
+    assert Quiz.query.filter_by(title='quiz1').count() == 1
+    assert Quiz.query.get(quiz.id).title == 'quiz22'
