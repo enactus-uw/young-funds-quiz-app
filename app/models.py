@@ -10,16 +10,14 @@ class Quiz(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     title = db.Column(db.String(), nullable=False)
-    enabled = db.Column(db.Boolean, default=True, nullable=False)
+    enabled = db.Column(db.Boolean, default=False, nullable=False)
     questions = db.relationship(
             'Question',
             backref='quiz',
             order_by='Question.position',
             collection_class=ordering_list('position'))
 
-    def __init__(self, title):
-        self.title = title
-        # Not to be set manually
+    def __init__(self):
         self.enabled = False
 
     class EnableException(Exception):
@@ -56,11 +54,6 @@ class Question(db.Model):
         UniqueConstraint('position', 'quiz_id'),
     )
 
-    def __init__(self, quiz_id, text, position):
-        self.quiz_id = quiz_id
-        self.text = text
-        self.position = position
-
     def serialize(self):
         return { 'text': self.text }
 
@@ -72,8 +65,3 @@ class Choice(db.Model):
     text = db.Column(db.String(), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
     # Choices don't need to be ordered, so no position column
-
-    def __init__(self, question_id, text, correct):
-        self.question_id = question_id
-        self.text = text
-        self.correct = correct

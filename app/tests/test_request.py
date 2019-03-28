@@ -1,7 +1,15 @@
+import json
 import pytest
 from app.models import Quiz, Question, Choice
 from app.create_app import Routes
 from app.tests.util import make_quiz, make_question
+
+
+def post_json(client, route, data):
+    resp = client.post(route, data=json.dumps(data), content_type='application/json')
+    assert resp.status_code == 200
+    return resp
+
 
 def test_homepage(client):
     resp = client.get('/')
@@ -13,20 +21,15 @@ def test_wrong_method(client, path):
     resp = client.get(path)
     assert resp.status_code == 405
 
-def call_api(client, route, data):
-    resp = client.post(route, data=data)
-    assert resp.status_code == 200
-    return resp
-
 def test_create_quiz_api(dbclient):
-    resp = call_api(dbclient, Routes.CREATE_QUIZ, {'title': 'sample'})
+    resp = post_json(dbclient, Routes.CREATE_QUIZ, {'title': 'sample'})
     quiz = Quiz.query.filter_by(title='sample').one()
     assert int(resp.get_data()) == quiz.id
 
 @pytest.mark.parametrize('pos', [0, 1, 2, 3, 400])
 def test_create_question_api(dbclient, session, pos):
     quiz = make_quiz(session)
-    resp = call_api(dbclient, Routes.CREATE_QUESTION,
+    resp = post_json(dbclient, Routes.CREATE_QUESTION,
             {'position': pos, 'text': ';dfg,', 'quiz_id': quiz.id})
     
     question = Question.query.filter_by(position=pos).one()
@@ -38,7 +41,7 @@ def test_create_question_api(dbclient, session, pos):
 @pytest.mark.parametrize('correct', [True, False])
 def test_create_choice(dbclient, session, correct):
     question = make_question(session)
-    resp = call_api(dbclient, Routes.CREATE_CHOICE,
+    resp = post_json(dbclient, Routes.CREATE_CHOICE,
             {'text': 'abc ooome  dfg', 'correct': correct, 'question_id': question.id})
 
     choice = Choice.query.filter_by(correct=correct).one()

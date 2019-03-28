@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify
 
 from app.models import db, Quiz, Question, Choice
@@ -12,7 +13,8 @@ class Routes:
 
 # Gets fields out of request for create and editing 
 def request_vals(request, *keys):
-    return tuple(request.values.get(k) for k in keys)
+    data = request.get_json()
+    return {k: data[k] for k in keys}
 
 def create_app(config):
     app = Flask(__name__)
@@ -25,32 +27,34 @@ def create_app(config):
         return "Hello world"
 
     @app.route(Routes.CREATE_QUIZ, methods=['POST'])
-    def insert_quiz():
+    def create_quiz():
         # TODO admin auth
-        title = request_vals(request, 'title')
+        quiz = Quiz()
+        for attr, val in request_vals(request, 'title').items():
+            setattr(quiz, attr, val)
 
-        quiz = Quiz(title)
         db.session.add(quiz)
         db.session.commit()
         return str(quiz.id)
 
     @app.route(Routes.CREATE_QUESTION, methods=['POST'])
-    def insert_question():
+    def create_question():
         # TODO admin auth
-        text, position, quiz_id = request_vals(request, 'text', 'position', 'quiz_id')
+        question = Question()
+        for attr, val in request_vals(request, 'text', 'position', 'quiz_id').items():
+            setattr(question, attr, val)
 
-        question = Question(quiz_id, text, position)
         db.session.add(question)
         db.session.commit()
         return str(question.id)
 
     @app.route(Routes.CREATE_CHOICE, methods=['POST'])
-    def insert_choice():
+    def create_choice():
         # TODO admin auth
-        text, correct, question_id =\
-                request_vals(request, 'text', 'correct', 'question_id')
+        choice = Choice() 
+        for attr, val in request_vals(request, 'text', 'correct', 'question_id').items():
+            setattr(choice, attr, val)
 
-        choice = Choice(question_id, text, correct == 'True') 
         db.session.add(choice)
         db.session.commit()
         return str(choice.id)
