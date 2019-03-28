@@ -16,13 +16,12 @@ class Routes:
     EDIT_CHOICE = "/admin/edit/choice"
 
 
-# Gets fields out of request for create and editing 
+# Gets fields out of request for create and editing
 def request_vals(*keys):
     data = request.get_json()
     out = {}
     for k in keys:
-        if k in data:
-            out[k] = data[k]
+        out[k] = data[k]
     return out
 
 def create_api(model_cls, *keys):

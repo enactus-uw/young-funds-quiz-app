@@ -31,7 +31,7 @@ def test_create_question_api(dbclient, session, pos):
     quiz = make_quiz(session)
     resp = post_json(dbclient, Routes.CREATE_QUESTION,
             {'position': pos, 'text': ';dfg,', 'quiz_id': quiz.id})
-    
+
     question = Question.query.filter_by(position=pos).one()
     assert question.position == pos
     assert question.text == ';dfg,'
@@ -50,13 +50,17 @@ def test_create_choice(dbclient, session, correct):
     assert choice.question == question
     assert choice.id == int(resp.get_data())
 
+def test_empty_edit(dbclient, session):
+    quiz = make_quiz(session, 'quiz12')
+
+    with pytest.raises(KeyError):
+        post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id})
+
 def test_edit_quiz(dbclient, session):
-    make_quiz(session, 'quiz1') 
-    quiz = make_quiz(session, 'quiz12') 
+    make_quiz(session, 'quiz1')
+    quiz = make_quiz(session, 'quiz12')
 
     post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id, 'title': 'quiz22'})
-    # Make sure empty edits don't do anything and don't crash
-    post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id})
     assert Quiz.query.count() == 2
     assert Quiz.query.filter_by(title='quiz1').count() == 1
     assert Quiz.query.get(quiz.id).title == 'quiz22'
