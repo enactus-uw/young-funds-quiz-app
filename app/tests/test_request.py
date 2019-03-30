@@ -31,14 +31,14 @@ def test_create_quiz_api(dbclient):
     assert int(resp.get_data()) == quiz.id
 
 @pytest.mark.parametrize('pos', [0, 1, 2, 3, 400])
-def test_create_question_api(dbclient, session, pos):
-    quiz = make_quiz(session)
+def test_create_question_api(dbclient, db, pos):
+    quiz = make_quiz(db.session)
     resp = post_json(dbclient, Routes.CREATE_QUESTION,
-            {'position': pos, 'text': ';dfg,', 'quiz_id': quiz.id})
+            {'position': pos, 'text': 'a', 'quiz_id': quiz.id})
 
-    question = Question.query.filter_by(position=pos).one()
+    question = Question.query.filter_by(text='a').one()
     assert question.position == pos
-    assert question.text == ';dfg,'
+    assert question.text == 'a'
     assert question.quiz == quiz
     assert question.id == int(resp.get_data())
 

@@ -51,7 +51,7 @@ class Question(db.Model):
 
     __table_args__ = (
         # No duplicate position values for a given quiz
-        UniqueConstraint('position', 'quiz_id'),
+        UniqueConstraint('position', 'quiz_id', deferrable=True, initially='DEFERRED'),
     )
 
     def serialize(self):

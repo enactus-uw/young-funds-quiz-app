@@ -52,6 +52,19 @@ def test_question_repeat_position_diff_quiz(session):
     make_question(session, position=0)
     assert Question.query.filter_by(position=0).count() == 2
 
+# Test that the unique constriant on question.position is really deferrable
+def test_reorder_questions(session):
+    quiz = make_quiz(session)
+    q1 = make_question(session, position=0, quiz=quiz)
+    q2 = make_question(session, position=1, quiz=quiz)
+    q1.position = 1
+    q2.position = 0
+    session.add(q1, q2)
+    session.commit()
+
+    assert q1.position == 1
+    assert q2.position == 0
+
 def test_create_choice(session):
     question = make_question(session)
     choice1 = make_choice(session, 'choice1', False, question=question)
