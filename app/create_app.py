@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 
 from app.models import db, Quiz, Question, Choice
 
@@ -15,13 +15,22 @@ class Routes:
     EDIT_QUESTION = "/admin/edit/question"
     EDIT_CHOICE = "/admin/edit/choice"
 
+    POST_ENDPOINTS = [CREATE_QUIZ, CREATE_QUESTION, CREATE_CHOICE, EDIT_QUIZ,
+            EDIT_QUESTION, EDIT_CHOICE]
 
 # Gets fields out of request for create and editing
 def request_vals(*keys):
     data = request.get_json()
     out = {}
     for k in keys:
-        out[k] = data[k]
+        # Handle missing keys in request JSON with 422 error
+        if k not in data:
+            abort(422)
+        out[k] = data.pop(k)
+
+    # Extra fields will be ignored, which is confusing and therefore disallowed
+    if len(data) > 0:
+        abort(422)
     return out
 
 def create_api(model_cls, *keys):
@@ -34,9 +43,10 @@ def create_api(model_cls, *keys):
     return str(model.id)
 
 def edit_api(model_cls, *keys):
-    fields = request_vals(*keys, 'id')
     # Request JSON must contain ID of the model to edit
-    model = model_cls.query.get(fields.pop('id'))
+    fields = request_vals(*keys, 'id')
+    # Handle nonexistent model ID with 404 not found
+    model = model_cls.query.get_or_404(fields.pop('id'))
     for attr, val in fields.items():
         setattr(model, attr, val)
 
