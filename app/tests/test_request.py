@@ -2,7 +2,7 @@ import json
 import pytest
 from app.models import Quiz, Question, Choice
 from app.create_app import Routes
-from app.tests.util import make_quiz, make_question
+from app.tests.util import make_quiz, make_question, make_choice
 
 
 def post_json(client, route, data):
@@ -52,15 +52,6 @@ def test_create_choice(dbclient, session, correct):
     assert choice.question == question
     assert choice.id == int(resp.get_data())
 
-def test_empty_edit(dbclient, session):
-    quiz = make_quiz(session, 'quiz12')
-
-    with pytest.raises(KeyError):
-        post_json(dbclient, Routes.EDIT_QUIZ, {'id': quiz.id})
-
-    with pytest.raises(KeyError):
-        post_json(dbclient, Routes.CREATE_CHOICE, {})
-
 def test_edit_quiz(dbclient, session):
     make_quiz(session, 'quiz1')
     quiz = make_quiz(session, 'quiz12')
@@ -69,3 +60,43 @@ def test_edit_quiz(dbclient, session):
     assert Quiz.query.count() == 2
     assert Quiz.query.filter_by(title='quiz1').count() == 1
     assert Quiz.query.get(quiz.id).title == 'quiz22'
+
+    with pytest.raises(BaseException):
+        post_json(dbclient, Routes.EDIT_QUIZ,
+                {'id': quiz.id + 3, 'title': 'q23'})
+
+def test_edit_question(dbclient, session):
+    question = make_question(session, 'q23', 0)
+
+    post_json(dbclient, Routes.EDIT_QUESTION, {'id': question.id, 'text': 'q23'})
+    assert Question.query.filter_by(text='q23').one().id == question.id
+    post_json(dbclient, Routes.EDIT_QUESTION, {'id': question.id, 'text': '{}}'})
+    assert Question.query.filter_by(text='{}}').one().id == question.id
+
+    with pytest.raises(BaseException):
+        post_json(dbclient, Routes.EDIT_QUESTION,
+                {'id': question.id + 3, 'text': 'q23'})
+
+def test_edit_choice(dbclient, session):
+    choice = make_choice(session, 'choice', False)
+
+    post_json(dbclient, Routes.EDIT_CHOICE,
+            {'id': choice.id, 'text': 'ZZek', 'correct': True})
+    assert Choice.query.count() == 1
+    assert Choice.query.get(choice.id).text == 'ZZek'
+    assert Choice.query.get(choice.id).correct == True
+
+    with pytest.raises(BaseException):
+        # Nonexistent ID
+        post_json(dbclient, Routes.EDIT_CHOICE,
+                {'id': choice.id + 3, 'text': 'ZZek', 'correct': True})
+
+@pytest.mark.parametrize('mk_model,url',
+        [(make_quiz, Routes.EDIT_QUIZ),
+         (make_question, Routes.EDIT_QUESTION),
+         (make_choice, Routes.EDIT_CHOICE)])
+def test_bad_edits(dbclient, session, mk_model, url):
+    model = mk_model(session)
+
+    with pytest.raises(KeyError):
+        post_json(dbclient, url, {'id': model.id})

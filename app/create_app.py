@@ -78,11 +78,13 @@ def create_app(config):
     @app.route(Routes.EDIT_QUESTION, methods=['POST'])
     def edit_question():
         # TODO admin auth
-        return edit_api(Question, 'text', 'position', 'quiz_id')
+        # Disallow editing of foreign key and position
+        return edit_api(Question, 'text')
 
     @app.route(Routes.EDIT_CHOICE, methods=['POST'])
     def edit_choice():
         # TODO admin auth
-        return edit_api(Choice, 'text', 'correct', 'question_id')
+        # Disallow editting of foreign key
+        return edit_api(Choice, 'text', 'correct')
 
     return app
