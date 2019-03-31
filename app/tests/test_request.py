@@ -124,5 +124,4 @@ def test_edit_choice(dbclient, session):
          (make_choice, Routes.EDIT_CHOICE)])
 def test_bad_edits(dbclient, session, mk_model, url):
     model = mk_model(session)
-
     post_json(dbclient, url, {'id': model.id}, status=422)

@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy import exc
-from app.models import Quiz, Question
+from app.models import Quiz, Question, Choice
 from .util import make_quiz, make_choice, make_question
 
 def test_create_quiz(session):
@@ -95,3 +95,32 @@ def test_big_strings(session):
     make_quiz(session, ";;#@$^&&*()"*100)
     make_choice(session, ";;#@$^&&*()"*100)
     make_question(session, ";;#@$^&&*()"*100)
+
+def test_delete_quiz(session):
+    c = make_choice(session)
+    # Not tied to c
+    q = make_question(session)
+    session.delete(c.question.quiz)
+    session.commit()
+
+    assert Quiz.query.one() == q.quiz
+    assert Question.query.one() == q
+    assert Choice.query.count() == 0
+
+def test_delete_question(session):
+    c = make_choice(session)
+    session.delete(c.question)
+    session.commit()
+
+    assert Quiz.query.count() == 1
+    assert Question.query.count() == 0
+    assert Choice.query.count() == 0
+
+def test_delete_choice(session):
+    c = make_choice(session)
+    session.delete(c)
+    session.commit()
+
+    assert Quiz.query.count() == 1
+    assert Question.query.count() == 1
+    assert Choice.query.count() == 0

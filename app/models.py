@@ -15,7 +15,8 @@ class Quiz(db.Model):
             'Question',
             backref='quiz',
             order_by='Question.position',
-            collection_class=ordering_list('position'))
+            collection_class=ordering_list('position'),
+            cascade='delete-orphan,delete')
 
     def __init__(self):
         self.enabled = False
@@ -47,7 +48,7 @@ class Question(db.Model):
     text = db.Column(db.String(), nullable=False)
     # Used to order questions. Not necessarily equal to question number
     position = db.Column(db.Integer, nullable=False)
-    choices = db.relationship('Choice', backref='question')
+    choices = db.relationship('Choice', backref='question', cascade='delete-orphan,delete')
 
     __table_args__ = (
         # No duplicate position values for a given quiz
