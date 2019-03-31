@@ -95,10 +95,10 @@ def create_app(config):
     @app.route(Routes.SWAP_QUESTION, methods=['POST'])
     def swap_question():
         # TODO admin auth
-        data = request_vals('id', 'position', 'quiz_id')
+        data = request_vals('id', 'position')
         question1 = Question.query.get_or_404(data['id'])
         question2 = Question.query.filter_by(
-                position=data['position'], quiz_id=data['quiz_id']).one_or_none()
+                position=data['position'], quiz=question1.quiz).one_or_none()
 
         if question2 is None:
             abort(404)
