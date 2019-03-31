@@ -16,8 +16,13 @@ class Routes:
     SWAP_QUESTION = "/admin/swap/question"
     EDIT_CHOICE = "/admin/edit/choice"
 
+    DELETE_QUIZ = "/admin/delete/quiz"
+    DELETE_QUESTION = "/admin/delete/question"
+    DELETE_CHOICE = "/admin/delete/choice"
+
     POST_ENDPOINTS = [CREATE_QUIZ, CREATE_QUESTION, CREATE_CHOICE, EDIT_QUIZ,
-            EDIT_QUESTION, SWAP_QUESTION, EDIT_CHOICE]
+            EDIT_QUESTION, SWAP_QUESTION, EDIT_CHOICE, DELETE_QUIZ,
+            DELETE_CHOICE, DELETE_QUESTION]
 
 # Gets fields out of request for create and editing
 def request_vals(*keys):
@@ -54,6 +59,14 @@ def edit_api(model_cls, *keys):
     db.session.add(model)
     db.session.commit()
     return str(model.id)
+
+def delete_api(model_cls):
+    # Only need the ID
+    id = request_vals('id')['id']
+    model = model_cls.query.get_or_404(id)
+    db.session.delete(model)
+    db.session.commit()
+    return ''
 
 
 def create_app(config):
@@ -112,5 +125,17 @@ def create_app(config):
         # TODO admin auth
         # Disallow editting of foreign key
         return edit_api(Choice, 'text', 'correct')
+
+    @app.route(Routes.DELETE_QUIZ, methods=['POST'])
+    def delete_quiz():
+        return delete_api(Quiz)
+
+    @app.route(Routes.DELETE_QUESTION, methods=['POST'])
+    def delete_question():
+        return delete_api(Question)
+
+    @app.route(Routes.DELETE_CHOICE, methods=['POST'])
+    def delete_choice():
+        return delete_api(Choice)
 
     return app

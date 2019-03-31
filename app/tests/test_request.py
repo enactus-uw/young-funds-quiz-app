@@ -125,3 +125,23 @@ def test_edit_choice(dbclient, session):
 def test_bad_edits(dbclient, session, mk_model, url):
     model = mk_model(session)
     post_json(dbclient, url, {'id': model.id}, status=422)
+
+def test_delete_api(dbclient, session):
+    quiz = make_quiz(session)
+    question = make_question(session)
+    choice = make_choice(session)
+
+    post_json(dbclient, Routes.DELETE_CHOICE, {'id': choice.id})
+    assert Choice.query.get(choice.id) is None
+    post_json(dbclient, Routes.DELETE_QUESTION, {'id': question.id})
+    assert Question.query.get(question.id) is None
+    post_json(dbclient, Routes.DELETE_QUIZ, {'id': quiz.id})
+    assert Quiz.query.get(quiz.id) is None
+
+@pytest.mark.parametrize('url',
+        [Routes.DELETE_QUIZ, Routes.DELETE_QUESTION, Routes.DELETE_CHOICE])
+def test_delete_api_invalid(dbclient, session, url):
+    # Invalid input format should return 422
+    post_json(dbclient, url, {}, status=422)
+    # Nonexistent ID should return 404
+    post_json(dbclient, url, {'id': 4}, status=404)
