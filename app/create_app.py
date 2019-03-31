@@ -13,10 +13,11 @@ class Routes:
 
     EDIT_QUIZ = "/admin/edit/quiz"
     EDIT_QUESTION = "/admin/edit/question"
+    SWAP_QUESTION = "/admin/swap/question"
     EDIT_CHOICE = "/admin/edit/choice"
 
     POST_ENDPOINTS = [CREATE_QUIZ, CREATE_QUESTION, CREATE_CHOICE, EDIT_QUIZ,
-            EDIT_QUESTION, EDIT_CHOICE]
+            EDIT_QUESTION, SWAP_QUESTION, EDIT_CHOICE]
 
 # Gets fields out of request for create and editing
 def request_vals(*keys):
@@ -90,6 +91,21 @@ def create_app(config):
         # TODO admin auth
         # Disallow editing of foreign key and position
         return edit_api(Question, 'text')
+
+    @app.route(Routes.SWAP_QUESTION, methods=['POST'])
+    def swap_question():
+        # TODO admin auth
+        data = request_vals('id', 'position', 'quiz_id')
+        question1 = Question.query.get_or_404(data['id'])
+        question2 = Question.query.filter_by(
+                position=data['position'], quiz_id=data['quiz_id']).one_or_none()
+
+        if question2 is None:
+            abort(404)
+        question1.position, question2.position = question2.position, question1.position
+        db.session.add_all([question1, question2])
+        db.session.commit()
+        return str(question1.id)
 
     @app.route(Routes.EDIT_CHOICE, methods=['POST'])
     def edit_choice():

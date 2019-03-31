@@ -80,6 +80,32 @@ def test_edit_question(dbclient, session):
     post_json(dbclient, Routes.EDIT_QUESTION,
             {'id': question.id, 'text': 'q23', 'position': 5}, status=422)
 
+def test_swap_question(dbclient, session):
+    quiz = make_quiz(session)
+    q1 = make_question(session, position=0, quiz=quiz)
+    q2 = make_question(session, position=5, quiz=quiz)
+
+    # Swap with own position. No changes expected
+    post_json(dbclient, Routes.SWAP_QUESTION,
+            {'id': q1.id, 'position': q1.position, 'quiz_id': quiz.id})
+    assert q1.position == 0
+    assert q2.position == 5
+
+    post_json(dbclient, Routes.SWAP_QUESTION,
+            {'id': q1.id, 'position': q2.position, 'quiz_id': quiz.id})
+    assert q1.position == 5
+    assert q2.position == 0
+
+def test_bad_swap(dbclient, session):
+    q = make_question(session, position=2)
+    # Invalid ID
+    post_json(dbclient, Routes.SWAP_QUESTION,
+        {'id': q.id + 1, 'position': q.position, 'quiz_id': q.quiz.id}, status=404)
+    # Invalid position
+    post_json(dbclient, Routes.SWAP_QUESTION,
+        {'id': q.id, 'position': q.position + 1, 'quiz_id': q.quiz.id}, status=404)
+
+
 def test_edit_choice(dbclient, session):
     choice = make_choice(session, 'choice', False)
 
