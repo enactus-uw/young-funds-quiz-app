@@ -124,3 +124,61 @@ def test_delete_choice(session):
     assert Quiz.query.count() == 1
     assert Question.query.count() == 1
     assert Choice.query.count() == 0
+
+def test_serialize_quiz(session):
+    quiz = make_quiz(session, 'example')
+    assert quiz.serialize() == {
+        'id': quiz.id,
+        'title': quiz.title,
+        'enabled': quiz.enabled
+    }
+
+def test_serialize_question(session):
+    question = make_question(session, 'example', 10)
+    assert question.serialize() == {
+        'id': question.id,
+        'text': question.text,
+        'position': question.position,
+        'quiz_id': question.quiz.id
+    }
+
+def test_serialize_choice(session):
+    choice = make_choice(session, 'example', True)
+    assert choice.serialize() == {
+        'id': choice.id,
+        'text': choice.text,
+        'correct': choice.correct,
+        'question_id': choice.question.id
+    }
+
+def test_serialize_recursive(session):
+    quiz = make_quiz(session)
+    question1 = make_question(session, position=2, quiz=quiz)
+    question2 = make_question(session, position=0, quiz=quiz)
+    choice1 = make_choice(session, question=question1)
+
+    assert quiz.serialize(True) == {
+        'id': quiz.id,
+        'title': quiz.title,
+        'enabled': quiz.enabled,
+        'questions': [
+            {
+                'id': question2.id,
+                'text': question2.text,
+                'position': question2.position,
+                'quiz_id': question2.quiz_id,
+                'choices': []
+            }, {
+                'id': question1.id,
+                'text': question1.text,
+                'position': question1.position,
+                'quiz_id': question1.quiz_id,
+                'choices': [{
+                    'id': choice1.id,
+                    'text': choice1.text,
+                    'correct': choice1.correct,
+                    'question_id': choice1.question_id
+                }]
+            }
+        ]
+    }

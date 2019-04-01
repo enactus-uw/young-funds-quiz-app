@@ -33,12 +33,15 @@ class Quiz(db.Model):
                 raise Quiz.EnableException()
         return val
 
-    def serialize(self):
-        return {
+    def serialize(self, recursive=False):
+        data = {
             'id': self.id,
             'title': self.title,
-            'enabled': self.enabled,
+            'enabled': self.enabled
         }
+        if recursive:
+            data['questions'] = [q.serialize(True) for q in self.questions]
+        return data
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -55,8 +58,16 @@ class Question(db.Model):
         UniqueConstraint('position', 'quiz_id', deferrable=True, initially='DEFERRED'),
     )
 
-    def serialize(self):
-        return { 'text': self.text }
+    def serialize(self, recursive=False):
+        data = {
+            'id': self.id,
+            'text': self.text,
+            'position': self.position,
+            'quiz_id': self.quiz_id
+        }
+        if recursive:
+            data['choices'] = [c.serialize(True) for c in self.choices]
+        return data
 
 class Choice(db.Model):
     __tablename__ = 'choices'
@@ -66,3 +77,11 @@ class Choice(db.Model):
     text = db.Column(db.String(), nullable=False)
     correct = db.Column(db.Boolean, default=False, nullable=False)
     # Choices don't need to be ordered, so no position column
+
+    def serialize(self, recursive=True):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'correct': self.correct,
+            'question_id': self.question_id
+        }
