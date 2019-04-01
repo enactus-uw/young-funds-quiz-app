@@ -1,3 +1,4 @@
+import json
 from app.models import Quiz, Question, Choice
 
 def make_quiz(session, title='sample_quiz'):
@@ -30,3 +31,13 @@ def make_choice(session, text='sample_choice', correct=False, question=None):
     session.add(choice)
     session.commit()
     return choice
+
+def post_json(client, route, data, status=200):
+    resp = client.post(route, data=json.dumps(data), content_type='application/json')
+    assert resp.status_code == status
+    return resp
+
+def get_json(client, route, data, status=200):
+    resp = client.get(route, data=json.dumps(data), content_type='application/json')
+    assert resp.status_code == status
+    return resp.get_json()

@@ -20,9 +20,14 @@ class Routes:
     DELETE_QUESTION = "/admin/delete/question"
     DELETE_CHOICE = "/admin/delete/choice"
 
+    READ_ALL_QUIZZES = "/read/all/quizzes"
+    READ_QUIZ = "/read/quiz"
+
     POST_ENDPOINTS = [CREATE_QUIZ, CREATE_QUESTION, CREATE_CHOICE, EDIT_QUIZ,
             EDIT_QUESTION, SWAP_QUESTION, EDIT_CHOICE, DELETE_QUIZ,
             DELETE_CHOICE, DELETE_QUESTION]
+    
+    GET_ENDPOINTS = [READ_ALL_QUIZZES, READ_QUIZ]
 
 # Gets fields out of request for create and editing
 def request_vals(*keys):
@@ -137,5 +142,18 @@ def create_app(config):
     @app.route(Routes.DELETE_CHOICE, methods=['POST'])
     def delete_choice():
         return delete_api(Choice)
+    
+    @app.route(Routes.READ_ALL_QUIZZES, methods=['GET'])
+    def read_all_quizzes():
+        # TODO admin auth branching
+        quizzes = Quiz.query.all()
+        return jsonify([q.serialize() for q in quizzes])
+
+    @app.route(Routes.READ_QUIZ, methods=['GET'])
+    def read_quiz():
+        # TODO admin auth branching
+        id = request_vals('id')['id']
+        quiz = Quiz.query.get_or_404(id)
+        return jsonify(quiz.serialize(True))
 
     return app

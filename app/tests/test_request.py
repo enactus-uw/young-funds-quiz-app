@@ -2,23 +2,16 @@ import json
 import pytest
 from app.models import Quiz, Question, Choice
 from app.create_app import Routes
-from app.tests.util import make_quiz, make_question, make_choice
-
-
-def post_json(client, route, data, status=200):
-    resp = client.post(route, data=json.dumps(data), content_type='application/json')
-    assert resp.status_code == status
-    return resp
-
-
-def test_homepage(client):
-    resp = client.get('/')
-    assert resp.status_code == 200
-    # TODO elaborate
+from app.tests.util import make_quiz, make_question, make_choice, post_json, get_json
 
 @pytest.mark.parametrize('path', Routes.POST_ENDPOINTS)
-def test_wrong_method(client, path):
+def test_wrong_post(client, path):
     resp = client.get(path)
+    assert resp.status_code == 405
+
+@pytest.mark.parametrize('path', Routes.GET_ENDPOINTS)
+def test_wrong_get(client, path):
+    resp = client.post(path)
     assert resp.status_code == 405
 
 @pytest.mark.parametrize('path', Routes.POST_ENDPOINTS)
@@ -145,3 +138,22 @@ def test_delete_api_invalid(dbclient, session, url):
     post_json(dbclient, url, {}, status=422)
     # Nonexistent ID should return 404
     post_json(dbclient, url, {'id': 4}, status=404)
+
+def test_read_quiz(dbclient, session):
+    quiz = make_quiz(session)
+    question = make_question(session, quiz=quiz)
+    make_choice(session, question=question)
+
+    assert get_json(dbclient, Routes.READ_QUIZ, {'id': quiz.id}) ==\
+            quiz.serialize(True)
+    get_json(dbclient, Routes.READ_QUIZ, {'id': quiz.id + 1}, status=404)
+
+def test_read_all_quizzes(dbclient, session):
+    assert get_json(dbclient, Routes.READ_ALL_QUIZZES, {}) == []
+
+    quiz1 = make_quiz(session)
+    quiz2 = make_quiz(session)
+    quiz3 = make_quiz(session)
+
+    assert get_json(dbclient, Routes.READ_ALL_QUIZZES, {}) ==\
+            [quiz1.serialize(), quiz2.serialize(), quiz3.serialize()]
